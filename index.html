@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiktoria Natanek — Full Stack Engineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   RESET & VARIABLES
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --aqua:     #00d4ff;
+  --aqua-dim: #0088aa;
+  --mint:     #7fffd4;
+  --neon:     #00ffcc;
+  --pink:     #ff6eb4;
+  --purple:   #9b59ff;
+  --gold:     #ffd97a;
+  --bg:       #030d1e;
+  --panel:    rgba(3, 20, 48, 0.68);
+  --text:     #dff2ff;
+  --text2:    #7fc4e0;
+  --border:   rgba(0, 212, 255, 0.45);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: radial-gradient(ellipse 120% 60% at 50% 0%, #091e40 0%, #030d1e 55%);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   BACKGROUND LAYERS
+   ============================================================ */
+
+/* Perspective grid — fades toward top (horizon) */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 85%);
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 85%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* CRT scanlines */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.10) 3px, rgba(0,0,0,0.10) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Aurora blob — slow drifting glow */
+.aurora {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraDrift linear infinite;
+}
+.aurora-1 {
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse, rgba(0,180,255,0.12), transparent 70%);
+  top: -80px; left: 10%;
+  animation-duration: 22s;
+  animation-delay: 0s;
+}
+.aurora-2 {
+  width: 400px; height: 250px;
+  background: radial-gradient(ellipse, rgba(127,255,212,0.09), transparent 70%);
+  top: 20%; right: -60px;
+  animation-duration: 28s;
+  animation-delay: -10s;
+}
+.aurora-3 {
+  width: 350px; height: 200px;
+  background: radial-gradient(ellipse, rgba(155,89,255,0.07), transparent 70%);
+  bottom: 10%; left: 5%;
+  animation-duration: 34s;
+  animation-delay: -18s;
+}
+@keyframes auroraDrift {
+  0%,100% { transform: translateY(0)  translateX(0); }
+  33%      { transform: translateY(30px) translateX(20px); }
+  66%      { transform: translateY(-20px) translateX(-15px); }
+}
+
+/* Stars canvas */
+#stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Aero floating bubbles */
+.bubble {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%,
+    rgba(255,255,255,0.55) 0%,
+    rgba(0,212,255,0.22) 30%,
+    rgba(0,90,200,0.10) 60%,
+    transparent 100%
+  );
+  border: 1px solid rgba(0,212,255,0.18);
+  pointer-events: none;
+  z-index: 0;
+  animation: bubbleFloat var(--dur) linear var(--delay) infinite;
+}
+@keyframes bubbleFloat {
+  0%   { transform: translateY(110vh) translateX(0) scale(1);    opacity: 0; }
+  8%   { opacity: 0.9; }
+  92%  { opacity: 0.5; }
+  100% { transform: translateY(-120px) translateX(var(--drift)) scale(1.05); opacity: 0; }
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+main {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px 80px;
+  gap: 28px;
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  text-align: center;
+  animation: fadeSlideUp 0.9s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* Pixel-art cross stars row */
+.pixel-stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.px-cross {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+}
+.px-cross::before, .px-cross::after {
+  content: '';
+  position: absolute;
+  background: var(--aqua);
+}
+.px-cross::before { width: 6px; height: 18px; top: -6px; left: 0; }
+.px-cross::after  { width: 18px; height: 6px; top: 0; left: -6px; }
+.px-cross:nth-child(1) { animation: twinkle 2.2s ease-in-out infinite; }
+.px-cross:nth-child(2) { animation: twinkle 2.2s ease-in-out 0.5s infinite; --color: var(--mint); }
+.px-cross:nth-child(3) { animation: twinkle 2.2s ease-in-out 1s infinite; }
+.px-cross:nth-child(2)::before,
+.px-cross:nth-child(2)::after { background: var(--mint); }
+
+@keyframes twinkle {
+  0%,100% { opacity: 1;   transform: scale(1) rotate(0deg); }
+  50%     { opacity: 0.25; transform: scale(0.65) rotate(45deg); }
+}
+
+/* Main name */
+.hero-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(13px, 2.8vw, 26px);
+  color: var(--aqua);
+  letter-spacing: 2px;
+  line-height: 1.7;
+  text-shadow:
+    0 0 8px  var(--aqua),
+    0 0 24px rgba(0,212,255,0.55),
+    0 0 60px rgba(0,212,255,0.2);
+  animation: nameGlow 3.5s ease-in-out infinite;
+}
+@keyframes nameGlow {
+  0%,100% {
+    text-shadow: 0 0 8px var(--aqua), 0 0 24px rgba(0,212,255,0.55), 0 0 60px rgba(0,212,255,0.2);
+  }
+  50% {
+    text-shadow: 0 0 14px var(--aqua), 0 0 40px rgba(0,212,255,0.75), 0 0 90px rgba(0,212,255,0.35);
+  }
+}
+
+/* Typewriter job title */
+.hero-title-wrap {
+  margin-top: 18px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.typewriter {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(6px, 1.4vw, 11px);
+  color: var(--mint);
+  letter-spacing: 4px;
+  border-right: 3px solid var(--mint);
+  padding-right: 4px;
+  animation: blink 0.75s step-end infinite;
+}
+@keyframes blink { 50% { border-color: transparent; } }
+
+/* Pixel divider below hero */
+.pixel-divider {
+  width: 220px;
+  height: 4px;
+  margin: 10px auto 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--aqua) 0px, var(--aqua) 8px,
+      transparent 8px, transparent 12px,
+      var(--mint) 12px, var(--mint) 16px,
+      transparent 16px, transparent 20px
+    );
+  opacity: 0.5;
+}
+
+/* ============================================================
+   PANEL (Glassmorphism + Stardew-style pixel border)
+   ============================================================ */
+.panel {
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  /* Triple-layer border: bright aqua → dark navy → faint aqua glow */
+  border: 3px solid var(--aqua);
+  box-shadow:
+    0 0 0 5px #011828,
+    0 0 0 8px rgba(0,212,255,0.18),
+    0 0 45px rgba(0,212,255,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 0 40px rgba(0,180,255,0.05);
+
+  max-width: 680px;
+  width: 100%;
+  padding: 30px 36px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeSlideUp 0.9s cubic-bezier(0.22,1,0.36,1) both;
+}
+.panel:nth-child(2) { animation-delay: 0.12s; }
+.panel:nth-child(3) { animation-delay: 0.24s; }
+
+/* Gloss sweep on hover */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 55%; height: 100%;
+  background: linear-gradient(105deg,
+    transparent 38%, rgba(255,255,255,0.05) 50%, transparent 62%
+  );
+  transition: left 0.55s ease;
+  pointer-events: none;
+}
+.panel:hover::before { left: 160%; }
+
+/* Top-right pixel corner ornament */
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 14px; height: 14px;
+  border-top: 3px solid var(--mint);
+  border-right: 3px solid var(--mint);
+}
+
+/* Bottom-left pixel corner ornament */
+.corner-bl {
+  position: absolute;
+  bottom: 8px; left: 8px;
+  width: 14px; height: 14px;
+  border-bottom: 3px solid var(--mint);
+  border-left: 3px solid var(--mint);
+}
+
+/* Section label */
+.panel-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--mint);
+  letter-spacing: 3px;
+  opacity: 0.8;
+  margin-bottom: 18px;
+}
+
+/* ============================================================
+   ABOUT PANEL
+   ============================================================ */
+.about-text {
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.85;
+  color: var(--text);
+  margin-bottom: 22px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Pixel-clipped badge tags */
+.tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  color: #020d1e;
+  padding: 7px 12px;
+  position: relative;
+  cursor: default;
+  transition: transform 0.15s, filter 0.15s;
+  /* Angled top-right and bottom-left corners (Stardew-ish) */
+  clip-path: polygon(
+    0 0,
+    calc(100% - 7px) 0,
+    100% 7px,
+    100% 100%,
+    7px 100%,
+    0 calc(100% - 7px)
+  );
+}
+.tag:hover { transform: translateY(-3px) scale(1.06); filter: brightness(1.18); }
+
+.tag-1 { background: linear-gradient(135deg, #00d4ff, #7fffd4); }
+.tag-2 { background: linear-gradient(135deg, #ff6eb4, #9b59ff); }
+.tag-3 { background: linear-gradient(135deg, #ffd97a, #00d4ff); }
+.tag-4 { background: linear-gradient(135deg, #7fffd4, #9b59ff); }
+
+/* ============================================================
+   CONNECT PANEL
+   ============================================================ */
+.links-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.link-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-decoration: none;
+  padding: 18px 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s, box-shadow 0.18s;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 9px) 0,
+    100% 9px,
+    100% 100%,
+    9px 100%,
+    0 calc(100% - 9px)
+  );
+}
+
+/* Top gloss streak */
+.link-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 42%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.14), transparent);
+  pointer-events: none;
+}
+
+/* Hover sweep shine */
+.link-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -80%; width: 55%; height: 100%;
+  background: linear-gradient(105deg,
+    transparent 28%, rgba(255,255,255,0.18) 50%, transparent 72%
+  );
+  transition: left 0.38s ease;
+  pointer-events: none;
+}
+.link-btn:hover::after  { left: 130%; }
+.link-btn:hover         { transform: translateY(-4px); }
+
+/* GitHub */
+.btn-github {
+  background: linear-gradient(140deg, rgba(0,150,220,0.22), rgba(0,60,140,0.30));
+  border: 2px solid var(--aqua);
+  color: var(--aqua);
+  box-shadow: 0 0 18px rgba(0,212,255,0.22), 0 0 0 4px #011828;
+}
+.btn-github:hover {
+  box-shadow: 0 10px 34px rgba(0,212,255,0.4), 0 0 0 4px #011828;
+}
+
+/* LinkedIn */
+.btn-linkedin {
+  background: linear-gradient(140deg, rgba(0,200,160,0.18), rgba(0,100,80,0.28));
+  border: 2px solid var(--mint);
+  color: var(--mint);
+  box-shadow: 0 0 18px rgba(127,255,212,0.18), 0 0 0 4px #011828;
+}
+.btn-linkedin:hover {
+  box-shadow: 0 10px 34px rgba(127,255,212,0.38), 0 0 0 4px #011828;
+}
+
+/* Pixel icon blocks (retro-style) */
+.btn-icon {
+  width: 14px; height: 14px;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+/* GitHub icon: octocat silhouette in pixels via box-shadow */
+.icon-gh {
+  width: 4px; height: 4px;
+  background: currentColor;
+  box-shadow:
+    4px 0 0 currentColor,   8px 0 0 currentColor,
+    -4px 4px 0 currentColor, 0 4px 0 currentColor, 4px 4px 0 currentColor, 8px 4px 0 currentColor, 12px 4px 0 currentColor,
+    -4px 8px 0 currentColor, 0 8px 0 currentColor, 4px 8px 0 currentColor, 8px 8px 0 currentColor, 12px 8px 0 currentColor,
+    0 12px 0 currentColor, 4px 12px 0 currentColor, 8px 12px 0 currentColor;
+}
+/* LinkedIn icon: simple L in pixels */
+.icon-li {
+  width: 4px; height: 4px;
+  background: currentColor;
+  box-shadow:
+    0 4px 0 currentColor, 0 8px 0 currentColor, 0 12px 0 currentColor,
+    4px 12px 0 currentColor, 8px 12px 0 currentColor,
+    0px -4px 0 currentColor,
+    0 -8px 0 currentColor, 4px -8px 0 currentColor;
+}
+
+/* ============================================================
+   FLOATING PIXEL GEMS (decorative)
+   ============================================================ */
+.gem {
+  position: fixed;
+  width: 8px; height: 8px;
+  transform: rotate(45deg);
+  pointer-events: none;
+  z-index: 1;
+  animation: gemFloat var(--gd, 6s) ease-in-out var(--gdelay, 0s) infinite;
+}
+.gem-pink   { background: var(--pink);   box-shadow: 0 0 12px rgba(255,110,180,0.7); }
+.gem-mint   { background: var(--mint);   box-shadow: 0 0 12px rgba(127,255,212,0.7); }
+.gem-gold   { background: var(--gold);   box-shadow: 0 0 12px rgba(255,217,122,0.7); }
+.gem-purple { background: var(--purple); box-shadow: 0 0 12px rgba(155,89,255,0.7); }
+
+@keyframes gemFloat {
+  0%,100% { transform: rotate(45deg) translateY(0); }
+  50%      { transform: rotate(225deg) translateY(-18px); }
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 20px 20px 32px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: rgba(0,212,255,0.3);
+  letter-spacing: 3px;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 520px) {
+  .panel { padding: 24px 18px; }
+  .links-row { flex-direction: column; align-items: center; }
+  .link-btn { width: 100%; justify-content: center; }
+  .hero-name { font-size: 12px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="aurora aurora-1"></div>
+<div class="aurora aurora-2"></div>
+<div class="aurora aurora-3"></div>
+<canvas id="stars"></canvas>
+
+<!-- Floating pixel gems -->
+<div class="gem gem-pink"   style="top:12%;  left:6%;  --gd:7s;  --gdelay:0s;"></div>
+<div class="gem gem-mint"   style="top:22%;  right:7%; --gd:9s;  --gdelay:1.5s;"></div>
+<div class="gem gem-gold"   style="top:68%;  left:4%;  --gd:6s;  --gdelay:3s;"></div>
+<div class="gem gem-purple" style="top:75%;  right:5%; --gd:8s;  --gdelay:0.8s;"></div>
+<div class="gem gem-pink"   style="top:45%;  right:3%; --gd:10s; --gdelay:2s;"></div>
+<div class="gem gem-mint"   style="top:88%;  left:9%;  --gd:7.5s;--gdelay:4s;"></div>
+
+<main>
+
+  <!-- ====== HERO ====== -->
+  <section class="hero">
+    <div class="pixel-stars-row">
+      <span class="px-cross"></span>
+      <span class="px-cross"></span>
+      <span class="px-cross"></span>
+    </div>
+    <h1 class="hero-name">WIKTORIA NATANEK</h1>
+    <div class="hero-title-wrap">
+      <span class="typewriter" id="typewriter"></span>
+    </div>
+    <div class="pixel-divider"></div>
+  </section>
+
+  <!-- ====== ABOUT ====== -->
+  <div class="panel">
+    <div class="corner-bl"></div>
+    <p class="panel-label">// ABOUT.ME</p>
+    <p class="about-text">
+      Full stack engineer with 5 years of professional experience
+      and a deep passion for crafting beautiful, intuitive frontend
+      applications. Always building, always shipping.
+    </p>
+    <div class="tags">
+      <span class="tag tag-1">CALISTHENICS</span>
+      <span class="tag tag-2">GAMER</span>
+      <span class="tag tag-3">FITNESS</span>
+      <span class="tag tag-4">ARTIST</span>
+    </div>
+  </div>
+
+  <!-- ====== CONNECT ====== -->
+  <div class="panel">
+    <div class="corner-bl"></div>
+    <p class="panel-label">// CONNECT</p>
+    <div class="links-row">
+      <a class="link-btn btn-github"
+         href="https://github.com/wiktoria-n"
+         target="_blank" rel="noopener noreferrer">
+        <span class="btn-icon"><i class="icon-gh"></i></span>
+        GITHUB
+      </a>
+      <a class="link-btn btn-linkedin"
+         href="https://www.linkedin.com/in/wiktoria-natanek-a8b1091b6/"
+         target="_blank" rel="noopener noreferrer">
+        <span class="btn-icon"><i class="icon-li"></i></span>
+        LINKEDIN
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer>© 2026 &nbsp; WIKTORIA NATANEK &nbsp;·&nbsp; FULL STACK ENGINEER</footer>
+
+<script>
+/* ── STARS ──────────────────────────────────────────── */
+(function () {
+  const canvas = document.getElementById('stars');
+  const ctx    = canvas.getContext('2d');
+  let stars    = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function init() {
+    stars = Array.from({ length: 130 }, () => ({
+      x:     Math.random() * canvas.width,
+      y:     Math.random() * canvas.height,
+      r:     Math.random() * 1.4 + 0.3,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.004 + 0.0015,
+    }));
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const a = 0.3 + 0.7 * Math.abs(Math.sin(t * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(190,235,255,${a.toFixed(3)})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); init(); });
+  resize();
+  init();
+  requestAnimationFrame(draw);
+})();
+
+/* ── BUBBLES ─────────────────────────────────────────── */
+(function () {
+  const cfg = [
+    { size: 28,  x: '8%',  dur: '16s', delay: '0s',   drift: '30px'  },
+    { size: 52,  x: '20%', dur: '22s', delay: '-6s',  drift: '-35px' },
+    { size: 38,  x: '36%', dur: '18s', delay: '-3s',  drift: '25px'  },
+    { size: 70,  x: '52%', dur: '26s', delay: '-12s', drift: '-40px' },
+    { size: 44,  x: '64%', dur: '20s', delay: '-8s',  drift: '45px'  },
+    { size: 32,  x: '78%', dur: '15s', delay: '-2s',  drift: '-28px' },
+    { size: 60,  x: '88%', dur: '24s', delay: '-16s', drift: '35px'  },
+    { size: 22,  x: '94%', dur: '14s', delay: '-5s',  drift: '-20px' },
+  ];
+  cfg.forEach(c => {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.cssText = `
+      width:${c.size}px; height:${c.size}px;
+      left:${c.x}; bottom:-${c.size}px;
+      --dur:${c.dur}; --delay:${c.delay}; --drift:${c.drift};
+    `;
+    document.body.appendChild(b);
+  });
+})();
+
+/* ── TYPEWRITER ──────────────────────────────────────── */
+(function () {
+  const el   = document.getElementById('typewriter');
+  const text = 'FULL STACK ENGINEER';
+  let i      = 0;
+
+  function type() {
+    el.textContent = text.slice(0, i);
+    if (i < text.length) {
+      i++;
+      setTimeout(type, 95);
+    }
+  }
+
+  setTimeout(type, 900);
+})();
+</script>
+</body>
+</html>
